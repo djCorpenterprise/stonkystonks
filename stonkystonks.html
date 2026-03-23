@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StonkyStonks</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#08090d;--surface:#0f1018;--surface2:#161720;--surface3:#1d1e2a;
+    --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
+    --text:#e4e4f0;--muted:#5a5a70;
+    --green:#39e08a;--green-dim:rgba(57,224,138,0.1);
+    --red:#e03939;--red-dim:rgba(224,57,57,0.1);
+    --blue:#39aaff;--blue-dim:rgba(57,170,255,0.1);
+    --gold:#f0c93a;--gold-dim:rgba(240,201,58,0.1);
+    --purple:#a78bfa;--purple-dim:rgba(167,139,250,0.1);
+    --mono:'DM Mono',monospace;--display:'Bebas Neue',sans-serif;--sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+  /* Grid bg */
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(57,170,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(57,170,255,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+
+  /* Ticker */
+  .ticker{background:linear-gradient(90deg,var(--green),#22d97a);color:#08090d;font-family:var(--mono);font-size:11px;font-weight:500;overflow:hidden;white-space:nowrap;padding:7px 0;}
+  .ticker-inner{display:inline-block;animation:tick 35s linear infinite;}
+  @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .ts{margin:0 20px;opacity:0.4;}
+
+  .wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:0 1.5rem 5rem;}
+
+  /* Header */
+  header{padding:2rem 0 1.5rem;border-bottom:1px solid var(--border2);margin-bottom:2rem;display:flex;justify-content:space-between;align-items:flex-end;}
+  .logo{font-family:var(--display);font-size:56px;letter-spacing:0.03em;line-height:1;}
+  .logo .accent{color:var(--green);}
+  .logo .sub{font-size:12px;font-family:var(--mono);color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;font-family:var(--mono);}
+  .header-right{text-align:right;}
+  .hr-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px;}
+  .hr-val{font-family:var(--display);font-size:36px;letter-spacing:0.03em;}
+  .hr-val.up{color:var(--green);}
+  .hr-val.down{color:var(--red);}
+
+  /* Stat grid */
+  .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:2rem;}
+  .stat{background:var(--surface);padding:1rem 1.1rem;}
+  .sl{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;}
+  .sv{font-family:var(--display);font-size:26px;letter-spacing:0.03em;}
+  .sv.g{color:var(--green);}.sv.r{color:var(--red);}.sv.b{color:var(--blue);}.sv.gold{color:var(--gold);}.sv.p{color:var(--purple);}
+
+  /* Tabs */
+  .tabs{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:1.5rem;}
+  .tab{flex:1;padding:8px 10px;text-align:center;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);cursor:pointer;border-radius:7px;transition:all 0.15s;}
+  .tab.active{background:var(--green);color:#08090d;font-weight:500;}
+  .tab:hover:not(.active){color:var(--text);background:var(--surface2);}
+
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+
+  /* Section */
+  .sec{margin-bottom:2rem;}
+  .sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .sec-title{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;}
+  .badge{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:0.06em;}
+  .b-long{background:var(--green-dim);color:var(--green);border:1px solid rgba(57,224,138,0.2);}
+  .b-opts{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(167,139,250,0.2);}
+  .b-cash{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(240,201,58,0.2);}
+  .b-closed{background:var(--surface2);color:var(--muted);border:1px solid var(--border2);}
+
+  /* Long hold card */
+  .hold-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:8px;display:grid;grid-template-columns:60px 1fr 120px 120px 120px;gap:1rem;align-items:center;}
+  .hold-card:hover{border-color:var(--border2);}
+  .hold-card.pos{border-left:3px solid var(--green);}
+  .hold-card.neg{border-left:3px solid var(--red);}
+  .hc-ticker{font-family:var(--display);font-size:22px;letter-spacing:0.03em;color:var(--text);}
+  .hc-name{font-size:11px;color:var(--muted);margin-top:2px;}
+  .hc-thesis{font-size:11px;color:var(--muted);line-height:1.6;}
+  .hc-thesis strong{color:var(--text);}
+  .hc-price{text-align:right;}
+  .hc-current{font-family:var(--mono);font-size:15px;color:var(--text);}
+  .hc-entry{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px;}
+  .hc-shares{text-align:right;}
+  .hc-val{font-family:var(--mono);font-size:14px;color:var(--text);}
+  .hc-shares-n{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px;}
+  .hc-pnl{text-align:right;}
+  .hc-pnl-val{font-family:var(--display);font-size:22px;letter-spacing:0.02em;}
+  .hc-pnl-pct{font-family:var(--mono);font-size:10px;margin-top:2px;}
+  .up{color:var(--green);}.down{color:var(--red);}
+
+  /* Options card */
+  .opt-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:start;}
+  .opt-card.open{border-left:3px solid var(--purple);}
+  .opt-card.won{border-left:3px solid var(--green);background:rgba(57,224,138,0.03);}
+  .opt-card.lost{border-left:3px solid var(--red);background:rgba(224,57,57,0.03);}
+  .opt-card.closed{opacity:0.55;}
+  .oc-badge-wrap{display:flex;flex-direction:column;gap:4px;}
+  .oc-ticker{font-family:var(--display);font-size:20px;color:var(--text);}
+  .oc-type{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;display:inline-block;}
+  .call{background:var(--green-dim);color:var(--green);border:1px solid rgba(57,224,138,0.2);}
+  .put{background:var(--red-dim);color:var(--red);border:1px solid rgba(224,57,57,0.2);}
+  .oc-status{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:3px;margin-top:2px;}
+  .st-open{background:var(--purple-dim);color:var(--purple);}
+  .st-closed{background:var(--surface2);color:var(--muted);}
+  .oc-detail{font-size:11px;color:var(--muted);line-height:1.9;}
+  .oc-detail span{color:var(--text);}
+  .oc-right{text-align:right;min-width:100px;}
+  .oc-wager{font-family:var(--display);font-size:20px;color:var(--text);}
+  .oc-odds{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px;}
+  .oc-result{font-family:var(--mono);font-size:11px;font-weight:500;margin-top:4px;}
+  .res-open{color:var(--gold);}
+  .res-won{color:var(--green);}
+  .res-lost{color:var(--red);}
+
+  /* Update log */
+  .log-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:2rem;}
+  .log-hdr{padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .log-title{font-family:var(--mono);font-size:10px;color:var(--blue);text-transform:uppercase;letter-spacing:0.1em;}
+  .log-body{padding:1rem 1.25rem;font-family:var(--mono);font-size:11px;line-height:2.1;max-height:260px;overflow-y:auto;}
+  .ll{display:flex;gap:12px;}
+  .lt{color:var(--muted);min-width:55px;}
+  .lm-g{color:var(--green);}.lm-r{color:var(--red);}.lm-b{color:var(--blue);}.lm-y{color:var(--gold);}.lm-k{color:var(--muted);font-style:italic;}
+
+  /* Summary */
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:2rem;}
+  .sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+  .sum-title{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;}
+  .sum-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border);}
+  .sum-row:last-child{border-bottom:none;padding-top:8px;font-weight:500;font-size:13px;}
+  .sr-l{color:var(--muted);font-family:var(--mono);}
+  .sr-v{font-family:var(--mono);}
+  .sr-v.g{color:var(--green);}.sr-v.r{color:var(--red);}.sr-v.y{color:var(--gold);}
+
+  .disclaimer{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;padding:1rem;line-height:1.7;border-top:1px solid var(--border);}
+
+  @media(max-width:700px){
+    .stats{grid-template-columns:repeat(3,1fr);}
+    .hold-card{grid-template-columns:1fr 1fr;gap:8px;}
+    .hc-thesis{display:none;}
+    .summary-grid{grid-template-columns:1fr;}
+    header{flex-direction:column;gap:1rem;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    NVDA $176.32 +2.1%&nbsp;<span class="ts">·</span>&nbsp;AVGO $310.51 -2.9%&nbsp;<span class="ts">·</span>&nbsp;PLTR $157.36 +4.4%&nbsp;<span class="ts">·</span>&nbsp;META $584.20 +1.8%&nbsp;<span class="ts">·</span>&nbsp;TSM $329.24 -2.8%&nbsp;<span class="ts">·</span>&nbsp;S&P 500 6,581 +1.15%&nbsp;<span class="ts">·</span>&nbsp;NASDAQ 21,946 +1.38%&nbsp;<span class="ts">·</span>&nbsp;VIX 26.15 -2.35%&nbsp;<span class="ts">·</span>&nbsp;OPTIONS P&L: +$155 unrealized&nbsp;<span class="ts">·</span>&nbsp;LONG HOLDS: 5 positions · $5,000 deployed&nbsp;<span class="ts">·</span>&nbsp;LAST UPDATE: Mon Mar 23 2026 · 4:00 PM ET&nbsp;<span class="ts">·</span>&nbsp;NVDA $176.32 +2.1%&nbsp;<span class="ts">·</span>&nbsp;AVGO $310.51 -2.9%&nbsp;<span class="ts">·</span>&nbsp;PLTR $157.36 +4.4%&nbsp;<span class="ts">·</span>&nbsp;META $584.20 +1.8%&nbsp;<span class="ts">·</span>&nbsp;TSM $329.24 -2.8%&nbsp;<span class="ts">·</span>&nbsp;S&P 500 6,581 +1.15%&nbsp;<span class="ts">·</span>&nbsp;NASDAQ 21,946 +1.38%&nbsp;<span class="ts">·</span>&nbsp;VIX 26.15 -2.35%&nbsp;<span class="ts">·</span>&nbsp;OPTIONS P&L: +$155 unrealized&nbsp;<span class="ts">·</span>&nbsp;LONG HOLDS: 5 positions · $5,000 deployed&nbsp;<span class="ts">·</span>&nbsp;LAST UPDATE: Mon Mar 23 2026 · 4:00 PM ET&nbsp;
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="logo">STONKY<span class="accent">STONKS</span></div>
+      <div class="logo sub">AI Portfolio Tracker · Updated by Tripod · Mar 23 2026</div>
+    </div>
+    <div class="header-right">
+      <div class="hr-label">Total Portfolio Value</div>
+      <div class="hr-val up">$15,397</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--green);margin-top:3px;">+$397 (+2.7%) from start</div>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="sl">Long Hold $</div><div class="sv b">$5,000</div></div>
+    <div class="stat"><div class="sl">Options $</div><div class="sv p">$1,240</div></div>
+    <div class="stat"><div class="sl">Cash Reserve</div><div class="sv gold">$9,157</div></div>
+    <div class="stat"><div class="sl">Options P&L</div><div class="sv g">+$155</div></div>
+    <div class="stat"><div class="sl">Holds P&L</div><div class="sv g">+$242</div></div>
+    <div class="stat"><div class="sl">Total P&L</div><div class="sv g">+$397</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
+    <div class="tab" onclick="switchTab('longs',this)">Long Holds</div>
+    <div class="tab" onclick="switchTab('options',this)">Options</div>
+    <div class="tab" onclick="switchTab('ledger',this)">Ledger</div>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div class="tab-content active" id="tab-overview">
+
+    <div class="log-panel">
+      <div class="log-hdr">
+        <span class="log-title">// Tripod's latest market update</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">Mon Mar 23 2026 · EOD</span>
+      </div>
+      <div class="log-body">
+        <div class="ll"><span class="lt">16:05</span><span class="lm-b">EOD update. S&P +1.15%, Nasdaq +1.38%, Dow +631pts. Iran de-escalation drove the rally.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-b">Trump halted strikes on Iranian energy infrastructure for 5 days — WTI crude cratered 10% to $88.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-g">NVDA: closed $176.32. Up +2.1% on the day. GTC catalyst + market rally. Options call up +33%.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-g">PLTR: closed ~$157. Pentagon Maven "program of record" designation. Options call up +81%.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-y">AVGO: closed $310.51. Down -2.9% on week. AI semiconductor demand still structural — holding.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-y">META: est ~$584. Up on market rally. Digital ad + AI monetization thesis intact.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-y">TSM: $329.24. Down -2.8%. TSMC capacity crunch forces Nvidia rethink of Feynman — watching.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-r">TSLA options: closed -50%. Stop-loss executed EOD. NHTSA probe + Musk jury verdict killed bounce thesis.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-r">QQQ put: closed -67% earlier. Market rally turned against us fast. Right call to cut.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-b">MLB Opening Night tomorrow: Giants vs Yankees 8:05 ET. We have Giants +115. Check back for results.</span></div>
+        <div class="ll"><span class="lt">16:05</span><span class="lm-k">Next update: Tue Mar 24 after market close. Will assess long hold entries and options positions.</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-title">Long Hold Snapshot</div><span class="badge b-long">5 positions · $5,000</span></div>
+      <div class="hold-card pos">
+        <div><div class="hc-ticker">NVDA</div><div class="hc-name">Nvidia Corp</div></div>
+        <div class="hc-thesis"><strong>AI infrastructure king.</strong> $1T revenue target 2025–27. Vera Rubin chip, Groq partnership, GTC 2026 announcements. Down from ATH — buying the dip.</div>
+        <div class="hc-price"><div class="hc-current">$176.32</div><div class="hc-entry">entry $172.70</div></div>
+        <div class="hc-shares"><div class="hc-val">$1,000</div><div class="hc-shares-n">~5.8 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val up">+$21</div><div class="hc-pnl-pct up">+2.1%</div></div>
+      </div>
+      <div class="hold-card pos">
+        <div><div class="hc-ticker">PLTR</div><div class="hc-name">Palantir Tech</div></div>
+        <div class="hc-thesis"><strong>AI defense + enterprise.</strong> Pentagon Maven = program of record. UK FCA contract. 61% revenue growth projected 2026. Deep government moat.</div>
+        <div class="hc-price"><div class="hc-current">$157.36</div><div class="hc-entry">entry $150.68</div></div>
+        <div class="hc-shares"><div class="hc-val">$1,000</div><div class="hc-shares-n">~6.6 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val up">+$44</div><div class="hc-pnl-pct up">+4.4%</div></div>
+      </div>
+      <div class="hold-card neg">
+        <div><div class="hc-ticker">AVGO</div><div class="hc-name">Broadcom Inc</div></div>
+        <div class="hc-thesis"><strong>Custom AI silicon.</strong> 74% AI semiconductor revenue growth. Custom silicon business projected to 2x in 2026. CFRA $428 price target vs $310 current.</div>
+        <div class="hc-price"><div class="hc-current">$310.51</div><div class="hc-entry">entry $320.12</div></div>
+        <div class="hc-shares"><div class="hc-val">$1,000</div><div class="hc-shares-n">~3.1 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val down">-$30</div><div class="hc-pnl-pct down">-3.0%</div></div>
+      </div>
+      <div class="hold-card pos">
+        <div><div class="hc-ticker">META</div><div class="hc-name">Meta Platforms</div></div>
+        <div class="hc-thesis"><strong>AI ad monetization.</strong> Digital ad market leader + AI integration across Facebook, Instagram, WhatsApp. 24% revenue growth, historically cheap valuation.</div>
+        <div class="hc-price"><div class="hc-current">~$584</div><div class="hc-entry">entry $572.50</div></div>
+        <div class="hc-shares"><div class="hc-val">$1,000</div><div class="hc-shares-n">~1.7 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val up">+$20</div><div class="hc-pnl-pct up">+2.0%</div></div>
+      </div>
+      <div class="hold-card neg">
+        <div><div class="hc-ticker">TSM</div><div class="hc-name">Taiwan Semi</div></div>
+        <div class="hc-thesis"><strong>World's foundry.</strong> 70%+ global foundry market share. Every AI chip runs through TSMC. Capacity crunch = pricing power. Long-term structural winner.</div>
+        <div class="hc-price"><div class="hc-current">$329.24</div><div class="hc-entry">entry $336.50</div></div>
+        <div class="hc-shares"><div class="hc-val">$1,000</div><div class="hc-shares-n">~2.97 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val down">-$22</div><div class="hc-pnl-pct down">-2.2%</div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-title">Options Snapshot</div><span class="badge b-opts">3 open · 2 closed</span></div>
+      <div class="opt-card open">
+        <div class="oc-badge-wrap"><span class="oc-ticker">NVDA</span><span class="oc-type call">CALL</span><span class="oc-status st-open">OPEN</span></div>
+        <div class="oc-detail">Strike <span>$175</span> · Exp <span>Apr 4</span> · <span>2</span> contracts · Entry <span>$2.75</span> · Est. now <span>~$3.65</span><br>Stock: <span>$176.32</span> · Stop at breakeven · 12 DTE</div>
+        <div class="oc-right"><div class="oc-wager">$550</div><div class="oc-odds">entry $2.75/contract</div><div class="oc-result res-open">+$180 · +33%</div></div>
+      </div>
+      <div class="opt-card open">
+        <div class="oc-badge-wrap"><span class="oc-ticker">PLTR</span><span class="oc-type call">CALL</span><span class="oc-status st-open">OPEN</span></div>
+        <div class="oc-detail">Strike <span>$165</span> · Exp <span>Apr 4</span> · <span>1</span> contract · Entry <span>$0.80</span> · Est. now <span>~$1.45</span><br>Stock: <span>$157.36</span> · Pentagon catalyst · 12 DTE</div>
+        <div class="oc-right"><div class="oc-wager">$80</div><div class="oc-odds">entry $0.80/contract</div><div class="oc-result res-open">+$65 · +81%</div></div>
+      </div>
+      <div class="opt-card closed">
+        <div class="oc-badge-wrap"><span class="oc-ticker">QQQ</span><span class="oc-type put">PUT</span><span class="oc-status st-closed">CLOSED</span></div>
+        <div class="oc-detail">Strike <span>$575</span> · Exp <span>Mar 28</span> · <span>1</span> contract · Entry <span>$2.60</span> · Exit <span>$0.87</span><br>QQQ rallied to $590+ — put crushed. Stop-loss executed.</div>
+        <div class="oc-right"><div class="oc-wager">$260</div><div class="oc-odds">-110</div><div class="oc-result res-lost">-$173 · -67%</div></div>
+      </div>
+      <div class="opt-card closed">
+        <div class="oc-badge-wrap"><span class="oc-ticker">TSLA</span><span class="oc-type call">CALL</span><span class="oc-status st-closed">CLOSED</span></div>
+        <div class="oc-detail">Strike <span>$380</span> · Exp <span>Apr 11</span> · <span>1</span> contract · Entry <span>$2.20</span> · Exit <span>$1.10</span><br>TSLA faded all day. NHTSA probe + Musk jury verdict killed bounce thesis.</div>
+        <div class="oc-right"><div class="oc-wager">$220</div><div class="oc-odds">-110</div><div class="oc-result res-lost">-$110 · -50%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LONG HOLDS TAB -->
+  <div class="tab-content" id="tab-longs">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-title">Long Hold Portfolio</div><span class="badge b-long">$5,000 deployed · 5 stocks</span></div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:11px;color:var(--muted);line-height:1.7;">
+        <strong style="color:var(--blue);">Strategy:</strong> $1,000 per position across 5 high-conviction AI/tech plays. These are long-term holds — target 12–24 month horizon. Updated by Tripod after each market close with thesis checks and price targets.
+      </div>
+
+      <div class="hold-card pos">
+        <div><div class="hc-ticker">NVDA</div><div class="hc-name">Nvidia Corp</div></div>
+        <div class="hc-thesis"><strong>AI infrastructure king.</strong> $1T revenue target 2025–27, Vera Rubin chip, Groq partnership announced at GTC 2026. Trading at 45% discount to Morningstar fair value of $993. Down from $212 ATH — structural dip buyer.</div>
+        <div class="hc-price"><div class="hc-current">$176.32</div><div class="hc-entry">entry $172.70 · Mar 23</div></div>
+        <div class="hc-shares"><div class="hc-val">$1,021</div><div class="hc-shares-n">5.79 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val up">+$21</div><div class="hc-pnl-pct up">+2.1%</div></div>
+      </div>
+
+      <div class="hold-card pos">
+        <div><div class="hc-ticker">PLTR</div><div class="hc-name">Palantir Tech</div></div>
+        <div class="hc-thesis"><strong>AI + defense moat.</strong> Maven AI designated permanent "program of record" by Pentagon today. UK FCA contract. 61% revenue growth guide for 2026. Morgan Stanley: "lasting edge over competitors." Deep government switching costs.</div>
+        <div class="hc-price"><div class="hc-current">$157.36</div><div class="hc-entry">entry $150.68 · Mar 23</div></div>
+        <div class="hc-shares"><div class="hc-val">$1,044</div><div class="hc-shares-n">6.63 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val up">+$44</div><div class="hc-pnl-pct up">+4.4%</div></div>
+      </div>
+
+      <div class="hold-card neg">
+        <div><div class="hc-ticker">AVGO</div><div class="hc-name">Broadcom Inc</div></div>
+        <div class="hc-thesis"><strong>Custom AI silicon.</strong> 74% AI semiconductor revenue growth. Custom silicon business projected to 2x in fiscal 2026. CFRA $428 price target. Networks every major hyperscaler's AI infrastructure. Dividend grower.</div>
+        <div class="hc-price"><div class="hc-current">$310.51</div><div class="hc-entry">entry $320.12 · Mar 23</div></div>
+        <div class="hc-shares"><div class="hc-val">$970</div><div class="hc-shares-n">3.12 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val down">-$30</div><div class="hc-pnl-pct down">-3.0%</div></div>
+      </div>
+
+      <div class="hold-card pos">
+        <div><div class="hc-ticker">META</div><div class="hc-name">Meta Platforms</div></div>
+        <div class="hc-thesis"><strong>AI ad machine.</strong> Controls the digital ad duopoly with Alphabet. 24% revenue growth, 7% daily active user growth. AI integration across all products accelerating. Cheap relative to growth rate. Llama AI models creating ecosystem moat.</div>
+        <div class="hc-price"><div class="hc-current">~$584</div><div class="hc-entry">entry $572.50 · Mar 23</div></div>
+        <div class="hc-shares"><div class="hc-val">$1,020</div><div class="hc-shares-n">1.75 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val up">+$20</div><div class="hc-pnl-pct up">+2.0%</div></div>
+      </div>
+
+      <div class="hold-card neg">
+        <div><div class="hc-ticker">TSM</div><div class="hc-name">Taiwan Semi</div></div>
+        <div class="hc-thesis"><strong>World's foundry.</strong> 70%+ global foundry market share — every AI chip manufactured here. Demand massively exceeds capacity through 2027. Pricing power + Arizona fab expansion reduces geopolitical risk. Structural long-term winner.</div>
+        <div class="hc-price"><div class="hc-current">$329.24</div><div class="hc-entry">entry $336.50 · Mar 23</div></div>
+        <div class="hc-shares"><div class="hc-val">$978</div><div class="hc-shares-n">2.97 shares</div></div>
+        <div class="hc-pnl"><div class="hc-pnl-val down">-$22</div><div class="hc-pnl-pct down">-2.2%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTIONS TAB -->
+  <div class="tab-content" id="tab-options">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-title">Options Positions</div><span class="badge b-opts">$810 active · defined risk only</span></div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:11px;color:var(--muted);line-height:1.7;">
+        <strong style="color:var(--purple);">Rules:</strong> Buy calls/puts only · No naked selling · Max loss = premium paid · 40% stop-loss · 80–100% profit target · No margin ever
+      </div>
+
+      <div class="opt-card open">
+        <div class="oc-badge-wrap"><span class="oc-ticker">NVDA</span><span class="oc-type call">CALL</span><span class="oc-status st-open">OPEN</span></div>
+        <div class="oc-detail">
+          Strike <span>$175</span> · Exp <span>Apr 4</span> · <span>2</span> contracts · 12 DTE<br>
+          Entry premium <span>$2.75</span> · Current est. <span>~$3.65</span> · Total cost <span>$550</span><br>
+          Stock: <span>$176.32</span> · Stop raised to breakeven · Watching $178 breakout
+        </div>
+        <div class="oc-right"><div class="oc-wager">$550</div><div class="oc-odds">entry $2.75</div><div class="oc-result res-open">+$180 · +33%</div></div>
+      </div>
+
+      <div class="opt-card open">
+        <div class="oc-badge-wrap"><span class="oc-ticker">PLTR</span><span class="oc-type call">CALL</span><span class="oc-status st-open">OPEN</span></div>
+        <div class="oc-detail">
+          Strike <span>$165</span> · Exp <span>Apr 4</span> · <span>1</span> contract · 12 DTE<br>
+          Entry premium <span>$0.80</span> · Current est. <span>~$1.45</span> · Total cost <span>$80</span><br>
+          Stock: <span>$157.36</span> · Pentagon catalyst ongoing · Target $160+ push
+        </div>
+        <div class="oc-right"><div class="oc-wager">$80</div><div class="oc-odds">entry $0.80</div><div class="oc-result res-open">+$65 · +81%</div></div>
+      </div>
+
+      <div class="opt-card closed">
+        <div class="oc-badge-wrap"><span class="oc-ticker">TSLA</span><span class="oc-type call">CALL</span><span class="oc-status st-closed">CLOSED</span></div>
+        <div class="oc-detail">
+          Strike <span>$380</span> · Exp <span>Apr 11</span> · <span>1</span> contract<br>
+          Entry <span>$2.20</span> · Exit <span>$1.10</span> · TSLA closed <span>$367.96</span><br>
+          Stop-loss executed EOD. NHTSA probe + Musk jury verdict crushed bounce thesis.
+        </div>
+        <div class="oc-right"><div class="oc-wager">$220</div><div class="oc-odds">-110</div><div class="oc-result res-lost">-$110 · -50%</div></div>
+      </div>
+
+      <div class="opt-card closed">
+        <div class="oc-badge-wrap"><span class="oc-ticker">QQQ</span><span class="oc-type put">PUT</span><span class="oc-status st-closed">CLOSED</span></div>
+        <div class="oc-detail">
+          Strike <span>$575</span> · Exp <span>Mar 28</span> · <span>1</span> contract<br>
+          Entry <span>$2.60</span> · Exit <span>$0.87</span> · QQQ rallied to <span>$590+</span><br>
+          Market turned risk-on on Iran news. Cut to stop further time decay.
+        </div>
+        <div class="oc-right"><div class="oc-wager">$260</div><div class="oc-odds">-110</div><div class="oc-result res-lost">-$173 · -67%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEDGER TAB -->
+  <div class="tab-content" id="tab-ledger">
+    <div class="summary-grid">
+      <div class="sum-card">
+        <div class="sum-title">Long Hold Portfolio</div>
+        <div class="sum-row"><span class="sr-l">Starting capital</span><span class="sr-v">$5,000</span></div>
+        <div class="sum-row"><span class="sr-l">NVDA (5.79 sh)</span><span class="sr-v g">+$21</span></div>
+        <div class="sum-row"><span class="sr-l">PLTR (6.63 sh)</span><span class="sr-v g">+$44</span></div>
+        <div class="sum-row"><span class="sr-l">AVGO (3.12 sh)</span><span class="sr-v r">-$30</span></div>
+        <div class="sum-row"><span class="sr-l">META (1.75 sh)</span><span class="sr-v g">+$20</span></div>
+        <div class="sum-row"><span class="sr-l">TSM (2.97 sh)</span><span class="sr-v r">-$22</span></div>
+        <div class="sum-row"><span class="sr-l">Portfolio P&L</span><span class="sr-v g">+$242 (+4.8%)</span></div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-title">Options P&L</div>
+        <div class="sum-row"><span class="sr-l">Capital deployed</span><span class="sr-v">$1,110</span></div>
+        <div class="sum-row"><span class="sr-l">NVDA $175C (open)</span><span class="sr-v g">+$180</span></div>
+        <div class="sum-row"><span class="sr-l">PLTR $165C (open)</span><span class="sr-v g">+$65</span></div>
+        <div class="sum-row"><span class="sr-l">TSLA $380C (closed)</span><span class="sr-v r">-$110</span></div>
+        <div class="sum-row"><span class="sr-l">QQQ $575P (closed)</span><span class="sr-v r">-$173</span></div>
+        <div class="sum-row"><span class="sr-l">Net options P&L</span><span class="sr-v g">-$38 unrealized net</span></div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-title">Total Portfolio</div>
+        <div class="sum-row"><span class="sr-l">Long holds value</span><span class="sr-v">$5,242</span></div>
+        <div class="sum-row"><span class="sr-l">Options (open)</span><span class="sr-v">$875 est.</span></div>
+        <div class="sum-row"><span class="sr-l">Cash reserve</span><span class="sr-v y">$9,280</span></div>
+        <div class="sum-row"><span class="sr-l">Total value</span><span class="sr-v">$15,397</span></div>
+        <div class="sum-row"><span class="sr-l">Total P&L</span><span class="sr-v g">+$397 (+2.7%)</span></div>
+      </div>
+    </div>
+
+    <div class="log-panel">
+      <div class="log-hdr"><span class="log-title">// Trade history</span></div>
+      <div class="log-body">
+        <div class="ll"><span class="lt">Mar 23</span><span class="lm-g">OPENED: NVDA $175C Apr4 x2 @ $2.75 = $550 · Status: OPEN +33%</span></div>
+        <div class="ll"><span class="lt">Mar 23</span><span class="lm-g">OPENED: PLTR $165C Apr4 x1 @ $0.80 = $80 · Status: OPEN +81%</span></div>
+        <div class="ll"><span class="lt">Mar 23</span><span class="lm-r">OPENED/CLOSED: TSLA $380C Apr11 x1 @ $2.20 → $1.10 = -$110 · Stop-loss</span></div>
+        <div class="ll"><span class="lt">Mar 23</span><span class="lm-r">OPENED/CLOSED: QQQ $575P Mar28 x1 @ $2.60 → $0.87 = -$173 · Stop-loss</span></div>
+        <div class="ll"><span class="lt">Mar 23</span><span class="lm-g">BOUGHT: NVDA 5.79 shares @ $172.70 = $1,000 · Long hold</span></div>
+        <div class="ll"><span class="lt">Mar 23</span><span class="lm-g">BOUGHT: PLTR 6.63 shares @ $150.68 = $1,000 · Long hold</span></div>
+        <div class="ll"><span class="lt">Mar 23</span><span class="lm-g">BOUGHT: AVGO 3.12 shares @ $320.12 = $1,000 · Long hold</span></div>
+        <div class="ll"><span class="lt">Mar 23</span><span class="lm-g">BOUGHT: META 1.75 shares @ $572.50 = $1,000 · Long hold</span></div>
+        <div class="ll"><span class="lt">Mar 23</span><span class="lm-g">BOUGHT: TSM 2.97 shares @ $336.50 = $1,000 · Long hold</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    StonkyStonks is a paper trading tracker for entertainment and educational purposes only.<br>
+    Not financial advice. Past performance does not guarantee future results. Tripod is an AI, not a licensed financial advisor.
+  </div>
+</div>
+
+<script>
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
